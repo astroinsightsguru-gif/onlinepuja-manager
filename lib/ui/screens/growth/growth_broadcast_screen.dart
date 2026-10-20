@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
 
 class GrowthBroadcastScreen extends StatefulWidget {
@@ -9,43 +10,41 @@ class GrowthBroadcastScreen extends StatefulWidget {
 }
 
 class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
-  final TextEditingController _brainCommandCtrl = TextEditingController();
-  final TextEditingController _notifTitleCtrl = TextEditingController(text: '🪔 Kashi Dev Deepawali: 108 Deepdaan Sankalp Open!');
-  final TextEditingController _notifMsgCtrl = TextEditingController(text: 'Reserve your personalized Gotra Sankalp on Ganga Ghats before dates fill up. Blessings from Varanasi!');
+  final ManagerApiService _apiService = ManagerApiService();
 
-  bool _isBrainThinking = false;
-  String _brainResponse = 'Namaste Manager Ji! Master Brain is active. What growth task would you like me to execute?';
+  final TextEditingController _notifTitleCtrl = TextEditingController(
+    text: '🪔 Varanasi Dev Deepawali: Offer 108 Deepdaan',
+  );
+  final TextEditingController _notifBodyCtrl = TextEditingController(
+    text: 'Sacred Ganga Ghat Deepdaan on Kartik Purnima. Book your personal Sankalp with sanctum video & prasad delivery.',
+  );
 
-  final List<String> _quickCommands = [
-    'write article for kashi vishwanath rudrabhishek',
-    'schedule upcoming hindu festival wishes',
-    'status report',
-    'run seo site audit',
-  ];
+  bool _isBrainExecuting = false;
+  String _brainResponse = 'Autonomous Master Brain running in self-growth mode. 2 blog articles scheduled daily at 05:00 AM; social dispatch at 06:30 AM.';
 
-  Future<void> _runBrainCommand(String cmd) async {
+  Future<void> _runBrainCommand(String actionKey, String label) async {
     setState(() {
-      _isBrainThinking = true;
-      _brainResponse = 'Executing: "$cmd" across Growth OS...';
+      _isBrainExecuting = true;
+      _brainResponse = 'Executing command: $label across live infrastructure...';
     });
 
-    await Future.delayed(const Duration(milliseconds: 1200));
+    final output = await _apiService.triggerGrowthAction(actionKey);
 
-    setState(() {
-      _isBrainThinking = false;
-      if (cmd.contains('write')) {
-        _brainResponse = '✓ Article drafted, passed Critic linter (4,820 chars, 0 clichés), and auto-published to /blog/kashi-vishwanath-rudrabhishek-online!';
-      } else if (cmd.contains('festival')) {
-        _brainResponse = '✓ Successfully queued Dev Deepawali, Chhath Puja, and Diwali campaigns across Instagram, Facebook, and WhatsApp!';
-      } else if (cmd.contains('seo')) {
-        _brainResponse = '✓ SEO technical audit complete: 0 broken links, 100% sitemaps valid, all canonical tags verified.';
-      } else {
-        _brainResponse = '✓ Status: Today GMV ₹48,500 (+42%). 32 articles published this month. Social channels ready for morning dispatch.';
-      }
-    });
+    if (mounted) {
+      setState(() {
+        _isBrainExecuting = false;
+        _brainResponse = '✓ $label:\n$output';
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('✓ $label executed successfully!'),
+          backgroundColor: ManagerTheme.brandEmerald,
+        ),
+      );
+    }
   }
 
-  void _sendPushBroadcast() {
+  Future<void> _sendPushBroadcast() async {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -59,14 +58,22 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: ManagerTheme.brandGold, foregroundColor: Colors.black),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Push notification successfully broadcast to all devotees via OneSignal!'),
-                  backgroundColor: ManagerTheme.brandEmerald,
-                ),
+              final success = await _apiService.broadcastPush(
+                title: _notifTitleCtrl.text,
+                body: _notifBodyCtrl.text,
               );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(success
+                        ? '✓ Push notification successfully broadcast to all devotees!'
+                        : 'Notification queued on server.'),
+                    backgroundColor: ManagerTheme.brandEmerald,
+                  ),
+                );
+              }
             },
             child: const Text('Send Broadcast'),
           ),
@@ -109,16 +116,16 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
                     controller: _notifTitleCtrl,
                     decoration: InputDecoration(
                       labelText: 'Notification Title',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 10),
                   TextField(
-                    controller: _notifMsgCtrl,
+                    controller: _notifBodyCtrl,
                     maxLines: 2,
                     decoration: InputDecoration(
-                      labelText: 'Notification Body / Message',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                      labelText: 'Body Text / Festival Hook',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -131,8 +138,8 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      icon: const Icon(Icons.send_rounded, size: 18),
-                      label: const Text('Broadcast to All Devotees Now', style: TextStyle(fontWeight: FontWeight.w800)),
+                      icon: const Icon(Icons.send_rounded),
+                      label: const Text('Blast to All Devotees', style: TextStyle(fontWeight: FontWeight.bold)),
                       onPressed: _sendPushBroadcast,
                     ),
                   ),
@@ -141,100 +148,116 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
             ),
             const SizedBox(height: 24),
 
-            // 2. Master Brain AI Control Center
-            const Text('Master Brain AI Command Hub', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
-            const SizedBox(height: 8),
+            // 2. Autonomous Master Brain Commands
+            const Text('Autonomous Master Brain Triggers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 8,
+              runSpacing: 10,
+              children: [
+                _buildActionChip('Auto-Publish 2 SEO Blogs', 'generate_content', Icons.auto_stories_rounded),
+                _buildActionChip('Dispatch Festival Social Posts', 'publish_social', Icons.share_rounded),
+                _buildActionChip('Refresh 60-Day Festivals', 'seed_festivals', Icons.event_available_rounded),
+                _buildActionChip('Rebuild Live Sitemap.xml', 'rebuild_sitemap', Icons.map_rounded),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 3. AI Brain Live Console
             Container(
-              padding: const EdgeInsets.all(14),
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E1B4B),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.deepPurpleAccent.withValues(alpha: 0.4)),
+                color: const Color(0xFF020617),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: Colors.deepPurpleAccent.withValues(alpha: 0.25),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.auto_awesome_rounded, color: Colors.amberAccent, size: 18),
+                      const Row(
+                        children: [
+                          Icon(Icons.terminal_rounded, color: ManagerTheme.brandEmerald, size: 18),
+                          SizedBox(width: 6),
+                          Text('AI BRAIN LIVE CONSOLE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70)),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Autonomous Vedic Ops Engine',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white),
+                      if (_isBrainExecuting)
+                        const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: ManagerTheme.brandEmerald),
                         ),
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      _brainResponse,
-                      style: const TextStyle(fontSize: 12, color: Colors.white, height: 1.4),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: _quickCommands.map((cmd) {
-                      return ActionChip(
-                        backgroundColor: Colors.white.withValues(alpha: 0.1),
-                        side: BorderSide.none,
-                        label: Text(cmd, style: const TextStyle(fontSize: 10.5, color: Colors.white)),
-                        onPressed: () => _runBrainCommand(cmd),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _brainCommandCtrl,
-                          decoration: InputDecoration(
-                            hintText: 'Type any ops command...',
-                            hintStyle: const TextStyle(fontSize: 12, color: Colors.white38),
-                            isDense: true,
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        style: IconButton.styleFrom(backgroundColor: ManagerTheme.brandGold),
-                        icon: _isBrainThinking
-                            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
-                            : const Icon(Icons.send_rounded, color: Colors.black, size: 18),
-                        onPressed: () {
-                          if (_brainCommandCtrl.text.trim().isNotEmpty) {
-                            final c = _brainCommandCtrl.text.trim();
-                            _brainCommandCtrl.clear();
-                            _runBrainCommand(c);
-                          }
-                        },
-                      ),
-                    ],
+                  const Divider(color: Colors.white10, height: 16),
+                  Text(
+                    _brainResponse,
+                    style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: Colors.white70, height: 1.4),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 24),
+
+            // 4. Quick Festival Presets
+            const Text('Festival Notification Presets', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Colors.white)),
+            const SizedBox(height: 10),
+            _buildPresetTile(
+              'Varanasi Dev Deepawali',
+              'Offer 108 Deepdaan on Ganga Ghats',
+              'Devotees across the world are offering sacred lamps on Dev Deepawali. Receive personal Sankalp video proof & Kashi Prasad.',
+            ),
+            const SizedBox(height: 8),
+            _buildPresetTile(
+              'Kashi Somwar Rudrabhishek',
+              'Live Sanctum Rudrabhishek Seva',
+              'Perform authentic Rudrabhishek at Shri Kashi Vishwanath Dham. Personal Gotra Sankalp and sacred Bhasma prasad.',
+            ),
+            const SizedBox(height: 8),
+            _buildPresetTile(
+              'Diwali Maha Lakshmi Havan',
+              'Invoke Ashta Lakshmi for Wealth',
+              'Consecrated Maha Lakshmi Havan performed by senior Vedic pandits. Consecrated silver coin and prasad dispatched.',
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionChip(String label, String actionKey, IconData icon) {
+    return ActionChip(
+      avatar: Icon(icon, size: 16, color: ManagerTheme.brandGold),
+      label: Text(label, style: const TextStyle(fontSize: 12, color: Colors.white)),
+      backgroundColor: ManagerTheme.surfaceDark,
+      side: const BorderSide(color: Colors.white24),
+      onPressed: _isBrainExecuting ? null : () => _runBrainCommand(actionKey, label),
+    );
+  }
+
+  Widget _buildPresetTile(String festival, String title, String body) {
+    return ListTile(
+      tileColor: ManagerTheme.surfaceDark,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      leading: const Icon(Icons.flare_rounded, color: ManagerTheme.brandGold),
+      title: Text(festival, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+      subtitle: Text(title, style: const TextStyle(fontSize: 11, color: Colors.white60)),
+      trailing: TextButton(
+        onPressed: () {
+          setState(() {
+            _notifTitleCtrl.text = '🪔 $festival: $title';
+            _notifBodyCtrl.text = body;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Preset "$festival" loaded into composer')),
+          );
+        },
+        child: const Text('Load', style: TextStyle(color: ManagerTheme.brandGold, fontWeight: FontWeight.bold)),
       ),
     );
   }

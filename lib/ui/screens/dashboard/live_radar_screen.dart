@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
 
 class LiveRadarScreen extends StatefulWidget {
@@ -9,14 +10,16 @@ class LiveRadarScreen extends StatefulWidget {
 }
 
 class _LiveRadarScreenState extends State<LiveRadarScreen> {
-  bool _isLoading = false;
-  final double _todayGmv = 48500.0;
-  final int _activeAstrologers = 14;
-  final int _ongoingCalls = 3;
-  final int _pendingSankalps = 8;
-  final int _totalOrdersToday = 27;
+  final ManagerApiService _apiService = ManagerApiService();
 
-  final List<Map<String, dynamic>> _recentOrders = const [
+  bool _isLoading = false;
+  double _todayGmv = 48500.0;
+  int _activeAstrologers = 14;
+  int _ongoingCalls = 3;
+  int _pendingSankalps = 8;
+  int _totalOrdersToday = 27;
+
+  List<Map<String, dynamic>> _recentOrders = [
     {
       'id': 'OP-PUJA-1049',
       'devotee': 'Rohan Sharma',
@@ -63,8 +66,24 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
 
   Future<void> _refresh() async {
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(milliseconds: 600));
-    if (mounted) setState(() => _isLoading = false);
+    final data = await _apiService.fetchLiveRadar();
+    if (mounted) {
+      if (data != null) {
+        setState(() {
+          _todayGmv = (data['todayGmv'] as num?)?.toDouble() ?? _todayGmv;
+          _totalOrdersToday = (data['totalOrdersToday'] as num?)?.toInt() ?? _totalOrdersToday;
+          _activeAstrologers = (data['activeAstrologers'] as num?)?.toInt() ?? _activeAstrologers;
+          _ongoingCalls = (data['ongoingCalls'] as num?)?.toInt() ?? _ongoingCalls;
+          _pendingSankalps = (data['pendingSankalps'] as num?)?.toInt() ?? _pendingSankalps;
+          if (data['recentOrders'] is List && (data['recentOrders'] as List).isNotEmpty) {
+            _recentOrders = List<Map<String, dynamic>>.from(data['recentOrders']);
+          }
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 
   @override
@@ -134,7 +153,7 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: ManagerTheme.brandEmerald.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(10),
@@ -150,18 +169,18 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
+
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: _recentOrders.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 10),
-                itemBuilder: (context, i) {
-                  final o = _recentOrders[i];
-                  return _buildOrderRow(o);
+                itemBuilder: (context, index) {
+                  final order = _recentOrders[index];
+                  return _buildOrderStreamCard(order);
                 },
               ),
-              const SizedBox(height: 40),
             ],
           ),
         ),
@@ -174,17 +193,14 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
+        gradient: ManagerTheme.darkCardGradient,
         borderRadius: BorderRadius.circular(20),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF78350F), Color(0xFFB45309), Color(0xFFD97706)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        border: Border.all(color: ManagerTheme.brandGold.withValues(alpha: 0.35), width: 1.2),
         boxShadow: [
           BoxShadow(
-            color: ManagerTheme.brandAmber.withValues(alpha: 0.35),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -194,29 +210,42 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                "TODAY'S ESTIMATED GMV",
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w800, color: Colors.white70, letterSpacing: 0.8),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: ManagerTheme.brandGold.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.currency_rupee_rounded, color: ManagerTheme.brandGold, size: 18),
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    "TODAY'S ESTIMATED GMV",
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.8, color: Colors.white70),
+                  ),
+                ],
               ),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: ManagerTheme.brandEmerald.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text('Q4 PEAK SEASON', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: Colors.white)),
+                child: const Text('+18.4% vs yday', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: ManagerTheme.brandEmerald)),
               ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Text(
             '₹${_todayGmv.toStringAsFixed(0)}',
             style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: -0.5),
           ),
-          const SizedBox(height: 6),
-          const Text(
-            "+42% vs last week · Puja Sankalps & Astrologer Calls driving growth",
-            style: TextStyle(fontSize: 11.5, color: Colors.white70),
+          const SizedBox(height: 8),
+          Text(
+            '$_totalOrdersToday orders booked today across Pujas, Calls & AstroMall',
+            style: const TextStyle(fontSize: 12, color: Colors.white60),
           ),
         ],
       ),
@@ -224,95 +253,125 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
   }
 
   Widget _buildOperationsRadarGrid() {
-    return Row(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.45,
       children: [
-        Expanded(
-          child: _buildMetricTile(
-            title: 'Active Pandits',
-            value: '$_activeAstrologers',
-            subtitle: '$_ongoingCalls ongoing calls',
-            icon: Icons.person_search_rounded,
-            color: ManagerTheme.brandSapphire,
-          ),
+        _buildMetricTile(
+          icon: Icons.person_pin_rounded,
+          iconColor: ManagerTheme.brandGold,
+          title: 'Active Pandits',
+          value: '$_activeAstrologers Online',
+          subtitle: 'Ready for Sankalp/Calls',
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildMetricTile(
-            title: 'Sankalp Queue',
-            value: '$_pendingSankalps',
-            subtitle: '$_totalOrdersToday total today',
-            icon: Icons.local_fire_department_rounded,
-            color: ManagerTheme.brandEmerald,
-          ),
+        _buildMetricTile(
+          icon: Icons.phone_in_talk_rounded,
+          iconColor: ManagerTheme.brandEmerald,
+          title: 'Ongoing Calls',
+          value: '$_ongoingCalls Active',
+          subtitle: 'Live devotee consultations',
+        ),
+        _buildMetricTile(
+          icon: Icons.videocam_rounded,
+          iconColor: ManagerTheme.brandSapphire,
+          title: 'Pending Sankalps',
+          value: '$_pendingSankalps Awaiting',
+          subtitle: 'Video upload needed',
+        ),
+        _buildMetricTile(
+          icon: Icons.local_shipping_rounded,
+          iconColor: ManagerTheme.brandRuby,
+          title: 'Prasad Dispatch',
+          value: '19 Ready',
+          subtitle: 'AWB labels queued',
         ),
       ],
     );
   }
 
   Widget _buildMetricTile({
+    required IconData icon,
+    required Color iconColor,
     required String title,
     required String value,
     required String subtitle,
-    required IconData icon,
-    required Color color,
   }) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: ManagerTheme.surfaceDark,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.white70)),
-              Icon(icon, size: 20, color: color),
+              Icon(icon, color: iconColor, size: 20),
+              const SizedBox(width: 6),
+              Text(title, style: const TextStyle(fontSize: 12, color: Colors.white70, fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Colors.white)),
-          const SizedBox(height: 4),
-          Text(subtitle, style: TextStyle(fontSize: 10, color: color, fontWeight: FontWeight.w600)),
+          Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
+          Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.white54)),
         ],
       ),
     );
   }
 
-  Widget _buildOrderRow(Map<String, dynamic> o) {
+  Widget _buildOrderStreamCard(Map<String, dynamic> order) {
+    final isAwaitingVideo = order['status'] == 'Awaiting Video';
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: ManagerTheme.surfaceDark,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+        border: Border.all(
+          color: isAwaitingVideo
+              ? ManagerTheme.brandGold.withValues(alpha: 0.4)
+              : Colors.white.withValues(alpha: 0.06),
+        ),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: ManagerTheme.brandGold.withValues(alpha: 0.15),
-            child: const Text('🪔', style: TextStyle(fontSize: 16)),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isAwaitingVideo
+                  ? ManagerTheme.brandGold.withValues(alpha: 0.15)
+                  : ManagerTheme.brandEmerald.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              isAwaitingVideo ? Icons.video_camera_back_rounded : Icons.check_circle_rounded,
+              color: isAwaitingVideo ? ManagerTheme.brandGold : ManagerTheme.brandEmerald,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  o['puja'],
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(order['id']!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: ManagerTheme.brandGold)),
+                    Text(order['time']!, style: const TextStyle(fontSize: 10, color: Colors.white54)),
+                  ],
                 ),
+                const SizedBox(height: 4),
+                Text(order['puja']!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white)),
                 const SizedBox(height: 2),
-                Text(
-                  "${o['devotee']} (${o['gotra']} Gotra) · ${o['time']}",
-                  style: const TextStyle(fontSize: 11, color: Colors.white60),
-                ),
+                Text("Devotee: ${order['devotee']} (${order['gotra']} Gotra)", style: const TextStyle(fontSize: 11, color: Colors.white70)),
               ],
             ),
           ),
@@ -320,17 +379,23 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                o['amount'],
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: ManagerTheme.brandGold),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                o['status'],
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: o['status'] == 'Confirmed' ? ManagerTheme.brandEmerald : Colors.orangeAccent,
+              Text(order['amount']!, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: Colors.white)),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: isAwaitingVideo
+                      ? ManagerTheme.brandGold.withValues(alpha: 0.15)
+                      : ManagerTheme.brandEmerald.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  order['status']!,
+                  style: TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                    color: isAwaitingVideo ? ManagerTheme.brandGold : ManagerTheme.brandEmerald,
+                  ),
                 ),
               ),
             ],

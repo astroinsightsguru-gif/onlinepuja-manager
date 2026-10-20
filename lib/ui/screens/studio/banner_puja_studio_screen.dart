@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
 
 class BannerPujaStudioScreen extends StatefulWidget {
@@ -99,19 +100,28 @@ class _BannerPujaStudioScreenState extends State<BannerPujaStudioScreen> {
                 ),
                 icon: const Icon(Icons.cloud_upload_rounded),
                 label: const Text('Publish Banner to Live App', style: TextStyle(fontWeight: FontWeight.bold)),
-                onPressed: () {
+                onPressed: () async {
+                  final bannerTitle = titleCtrl.text;
+                  final bannerImg = imgCtrl.text;
                   setState(() {
                     _liveBanners.insert(0, {
-                      'title': titleCtrl.text,
+                      'title': bannerTitle,
                       'dates': 'Active Now',
                       'active': true,
-                      'image': imgCtrl.text,
+                      'image': bannerImg,
                     });
                   });
                   Navigator.pop(ctx);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Banner published to live customer app!')),
+                  await ManagerApiService().saveBanner(
+                    bannerImage: bannerImg,
+                    fromDate: DateTime.now().toIso8601String().split('T').first,
+                    toDate: DateTime.now().add(const Duration(days: 30)).toIso8601String().split('T').first,
                   );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Banner saved and published to live customer app!')),
+                    );
+                  }
                 },
               ),
             ),

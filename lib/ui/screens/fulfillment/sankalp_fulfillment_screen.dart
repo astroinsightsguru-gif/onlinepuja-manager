@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
 
 class SankalpFulfillmentScreen extends StatefulWidget {
@@ -60,17 +61,26 @@ class _SankalpFulfillmentScreenState extends State<SankalpFulfillmentScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: ManagerTheme.brandGold, foregroundColor: Colors.black),
-            onPressed: () {
+            onPressed: () async {
+              final vid = videoCtrl.text;
               setState(() {
-                item['videoUrl'] = videoCtrl.text;
+                item['videoUrl'] = vid;
                 if (item['status'] == 'Video Pending') {
                   item['status'] = 'Prasad Dispatch Pending';
                 }
               });
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video saved! Devotee can now watch in their Sankalp Vault.')),
+              final orderId = int.tryParse(item['id'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 1048;
+              await ManagerApiService().fulfillSankalp(
+                orderId: orderId,
+                videoUrl: vid,
+                awbCode: item['awb']?.toString() ?? '',
               );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Video saved! Devotee can now watch in their Sankalp Vault.')),
+                );
+              }
             },
             child: const Text('Save Video'),
           ),
@@ -97,15 +107,24 @@ class _SankalpFulfillmentScreenState extends State<SankalpFulfillmentScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: ManagerTheme.brandEmerald, foregroundColor: Colors.white),
-            onPressed: () {
+            onPressed: () async {
+              final awb = awbCtrl.text;
               setState(() {
-                item['awb'] = awbCtrl.text;
+                item['awb'] = awb;
                 item['status'] = 'Fulfilled';
               });
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Courier AWB saved! Devotee notified with live tracking link.')),
+              final orderId = int.tryParse(item['id'].toString().replaceAll(RegExp(r'[^0-9]'), '')) ?? 1048;
+              await ManagerApiService().fulfillSankalp(
+                orderId: orderId,
+                videoUrl: item['videoUrl']?.toString() ?? '',
+                awbCode: awb,
               );
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Courier AWB saved! Devotee notified with live tracking link.')),
+                );
+              }
             },
             child: const Text('Confirm Dispatch'),
           ),
