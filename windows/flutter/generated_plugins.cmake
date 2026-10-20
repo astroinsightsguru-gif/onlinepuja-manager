@@ -3,9 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  connectivity_plus
-  flutter_webrtc
-  livekit_client
   url_launcher_windows
 )
 
