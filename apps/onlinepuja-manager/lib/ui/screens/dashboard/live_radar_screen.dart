@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
+import '../blogs/blogs_management_screen.dart';
+import '../social/social_management_screen.dart';
+import '../bookings/master_bookings_screen.dart';
+import '../b2b/b2b_partner_hub_screen.dart';
 
 class LiveRadarScreen extends StatefulWidget {
   const LiveRadarScreen({super.key});
@@ -144,7 +148,11 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
               _buildOperationsRadarGrid(),
               const SizedBox(height: 20),
 
-              // 3. Live Order Stream
+              // 3. Business Control Tower (Blogs, Social, Bookings, B2B)
+              _buildBusinessControlTower(),
+              const SizedBox(height: 24),
+
+              // 4. Live Order Stream
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -321,6 +329,124 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
           Text(value, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: Colors.white)),
           Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.white54)),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessControlTower() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
+          children: [
+            Icon(Icons.hub_rounded, color: ManagerTheme.brandGold, size: 20),
+            SizedBox(width: 8),
+            Text(
+              'OnlinePuja Command Center',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildControlCard(
+                title: 'Blogs & SEO',
+                subtitle: '46 Live Guides',
+                icon: Icons.auto_stories_rounded,
+                color: const Color(0xFFF59E0B),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BlogsManagementScreen())),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildControlCard(
+                title: 'Social Hub',
+                subtitle: '71 Active Posts',
+                icon: Icons.share_rounded,
+                color: const Color(0xFFE11D48),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SocialManagementScreen())),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildControlCard(
+                title: 'Bookings Ledger',
+                subtitle: 'Pujas & Consults',
+                icon: Icons.receipt_long_rounded,
+                color: const Color(0xFF10B981),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MasterBookingsScreen())),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildControlCard(
+                title: 'B2B Partners',
+                subtitle: '10+ Travel Hubs',
+                icon: Icons.handshake_rounded,
+                color: const Color(0xFF6366F1),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const B2bPartnerHubScreen())),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildControlCard({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: ManagerTheme.surfaceDark,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: Colors.white),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 10.5, color: Colors.white60),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

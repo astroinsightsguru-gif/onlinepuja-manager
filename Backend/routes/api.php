@@ -617,4 +617,15 @@ Route::prefix('manager')->group(function () {
 
     // 🚀 Omnichannel Broadcast (WhatsApp + Brevo + Push)
     Route::post('growth/omnichannel-broadcast', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'omnichannelBroadcast']);
+
+    // ðŸ“ Blogs & SEO Publishing Hub
+    Route::get('blogs', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getBlogs']);
+    Route::post('blogs/{id}/toggle', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'toggleBlog']);
+
+    // ðŸ“± Social Media Omnichannel Control
+    Route::get('social/posts', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getSocialPosts']);
+    Route::post('social/{id}/publish', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'publishSocialNow']);
+
+    // ðŸ›• Master Bookings & Revenue Ledger
+    Route::get('bookings', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getAllBookings']);
 });

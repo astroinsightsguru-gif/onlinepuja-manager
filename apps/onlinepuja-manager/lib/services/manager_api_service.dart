@@ -364,4 +364,80 @@ class ManagerApiService {
     }
     return {'success': false, 'message': 'Failed to send broadcast.'};
   }
+
+  // 21. Fetch Live Blogs
+  Future<List<Map<String, dynamic>>> fetchBlogs() async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/blogs')).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded['blogs'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['blogs']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // 22. Toggle Blog Status
+  Future<bool> toggleBlog(int id) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/blogs/$id/toggle'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 8));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 23. Fetch Social Media Posts
+  Future<List<Map<String, dynamic>>> fetchSocialPosts({String? platform}) async {
+    try {
+      String url = '$baseUrl/social/posts';
+      if (platform != null && platform != 'all') url += '?platform=$platform';
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded['posts'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['posts']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // 24. Publish Social Post Now
+  Future<bool> publishSocialNow(int id) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/social/$id/publish'),
+        headers: {'Content-Type': 'application/json'},
+      ).timeout(const Duration(seconds: 8));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 25. Fetch Master Bookings Ledger
+  Future<List<Map<String, dynamic>>> fetchMasterBookings({String? type, String? status}) async {
+    try {
+      String url = '$baseUrl/bookings';
+      List<String> q = [];
+      if (type != null && type != 'all') q.add('type=$type');
+      if (status != null && status != 'all') q.add('status=$status');
+      if (q.isNotEmpty) url += '?${q.join('&')}';
+
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded['bookings'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['bookings']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
 }
