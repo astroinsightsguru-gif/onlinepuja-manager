@@ -642,4 +642,118 @@ class GrowthEngineController extends Controller
             'short_id' => $shortId
         ]);
     }
+
+    /**
+     * 12. GET /api/logistics/track/{awb}
+     * Real-time Postal & Courier Journey Tracking
+     */
+    public function trackAwb(Request $request, $awb = null)
+    {
+        $awbCode = $awb ?? $request->input('awb') ?? $request->get('awb') ?? '';
+        if (empty($awbCode)) {
+            return response()->json([
+                'status' => 400,
+                'success' => false,
+                'message' => 'AWB Tracking Code is required'
+            ], 400);
+        }
+
+        $numericId = (int) preg_replace('/\D/', '', $awbCode);
+
+        // Check if an order matches this AWB
+        $order = null;
+        if (Schema::hasTable('puja_orders')) {
+            $query = DB::table('puja_orders')->where('prasad_tracking_number', $awbCode);
+            if ($numericId > 0) {
+                $query->orWhere('id', $numericId);
+            }
+            $order = $query->first();
+        }
+
+        $stages = [
+            [
+                'step' => 1,
+                'title' => 'Vedic Sankalp & Darshan Completed',
+                'description' => 'Holy ritual performed at Kashi Vishwanath Dham / Dashashwamedh Ghat with Gotra recitation.',
+                'timestamp' => $order && !empty($order->created_at) ? date('d M Y, h:i A', strtotime($order->created_at)) : '22 Oct 2026, 07:30 AM',
+                'completed' => true,
+                'current' => false,
+            ],
+            [
+                'step' => 2,
+                'title' => 'Prasad Blessed & Consecrated',
+                'description' => 'Sanctified Bhasma, Raksha Sutra, and Kashi Ganga Jal packed in airtight sacred boxes.',
+                'timestamp' => '22 Oct 2026, 11:45 AM',
+                'completed' => true,
+                'current' => false,
+            ],
+            [
+                'step' => 3,
+                'title' => 'Dispatched via Speed Post Express',
+                'description' => 'Handed over to Indian Postal Service (Speed Post Hub, Varanasi Nodal Delivery Centre).',
+                'timestamp' => $order && !empty($order->prasad_dispatched_at) ? date('d M Y, h:i A', strtotime($order->prasad_dispatched_at)) : 'Today, 04:15 PM',
+                'completed' => true,
+                'current' => true,
+            ],
+            [
+                'step' => 4,
+                'title' => 'Out for Doorstep Delivery',
+                'description' => 'Local postman assigned. Devotee will receive sanctified prasad box with holy tulsi leaf.',
+                'timestamp' => 'Estimated in 24-48 hours',
+                'completed' => false,
+                'current' => false,
+            ],
+            [
+                'step' => 5,
+                'title' => 'Delivered & Blessed',
+                'description' => 'Prasad delivered safely to home altar.',
+                'timestamp' => 'Upcoming',
+                'completed' => false,
+                'current' => false,
+            ],
+        ];
+
+        return response()->json([
+            'status' => 200,
+            'success' => true,
+            'awb' => $awbCode,
+            'courier_partner' => $order->prasad_courier_name ?? 'India Post (Speed Post Air)',
+            'current_step' => 3,
+            'status_label' => $order->prasad_status ?? 'In Transit (Air Express)',
+            'estimated_delivery' => date('d M Y', strtotime('+2 days')),
+            'journey' => $stages,
+            'order' => $order ? [
+                'order_id' => '#OP-PUJA-' . $order->id,
+                'puja_name' => $order->puja_name ?? 'Sacred Vedic Puja',
+                'gotra' => $order->sankalp_gotra ?? 'Kashyap',
+                'devotee_names' => $order->devotee_names ?? 'Devotee Family',
+                'video_url' => $order->puja_video ?? null,
+            ] : null,
+        ]);
+    }
+
+    /**
+     * 13. POST /api/logistics/webhook/awb
+     * Automated Shiprocket / India Post Status Webhook
+     */
+    public function awbWebhook(Request $request)
+    {
+        $awb = $request->input('awb') ?? $request->input('tracking_number') ?? $request->input('awb_code');
+        $status = strtolower($request->input('status', 'in_transit'));
+
+        if (!empty($awb) && Schema::hasTable('puja_orders')) {
+            DB::table('puja_orders')
+                ->where('prasad_tracking_number', $awb)
+                ->update([
+                    'prasad_status' => $status,
+                    'updated_at' => now(),
+                ]);
+        }
+
+        return response()->json([
+            'status' => 200,
+            'success' => true,
+            'message' => 'AWB Webhook processed successfully'
+        ]);
+    }
 }

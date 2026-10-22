@@ -581,6 +581,10 @@ Route::post('getUserOrders', [\App\Http\Controllers\API\User\GrowthEngineControl
 
 // 📱 OnlinePuja Manager Pocket Control Center Endpoints
 // Spiritual Shorts and Daily AI Reels Feed
+// ðŸ“¦ Real-Time Speed Post & Logistics Tracking
+Route::get('logistics/track/{awb?}', [\App\Http\Controllers\API\User\GrowthEngineController::class, 'trackAwb'])->name('api.logistics.track');
+Route::post('logistics/webhook/awb', [\App\Http\Controllers\API\User\GrowthEngineController::class, 'awbWebhook'])->name('api.logistics.webhook');
+
 Route::get('feed/shorts', [\App\Http\Controllers\API\User\GrowthEngineController::class, 'getSpiritualShorts'])->name('api.feed.shorts');
 Route::post('feed/shorts/like', [\App\Http\Controllers\API\User\GrowthEngineController::class, 'likeShort'])->name('api.feed.shorts.like');
 

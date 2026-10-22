@@ -176,6 +176,27 @@ class Kernel extends ConsoleKernel
             ->name('social_plan_astrologers')
             ->withoutOverlapping();
 
+        // 🤖 ONLINE PUJA AI AUTONOMOUS FLEET: Automated Daily Synthesis
+        $schedule->command('agent:run panchang')
+            ->dailyAt('04:00')
+            ->name('agent_run_panchang')
+            ->withoutOverlapping();
+
+        $schedule->command('agent:run rashifal')
+            ->dailyAt('04:30')
+            ->name('agent_run_rashifal')
+            ->withoutOverlapping();
+
+        $schedule->command('agent:run seo_blog')
+            ->dailyAt('06:00')
+            ->name('agent_run_seo_blog')
+            ->withoutOverlapping();
+
+        $schedule->command('agent:run festival')
+            ->dailyAt('00:00')
+            ->name('agent_run_festival')
+            ->withoutOverlapping();
+
         // 🌐 PROGRAMMATIC SEO: Generate XML Sitemaps & Ping Google/Bing (Daily 02:00 AM)
         $schedule->command('sitemap:generate --ping')
             ->dailyAt('02:00')
