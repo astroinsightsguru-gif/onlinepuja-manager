@@ -137,8 +137,14 @@ class _BannerPujaStudioScreenState extends State<BannerPujaStudioScreen> {
                 labelText: 'Image URL or Cloud Asset',
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.camera_alt_rounded, color: ManagerTheme.brandGold),
-                  onPressed: () {},
+                  icon: const Icon(Icons.photo_library_rounded, color: ManagerTheme.brandGold),
+                  tooltip: 'Load Dev Deepawali Preset',
+                  onPressed: () {
+                    imgCtrl.text = 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=1200&q=80';
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('✓ Sacred Dev Deepawali high-res preset loaded!')),
+                    );
+                  },
                 ),
               ),
             ),

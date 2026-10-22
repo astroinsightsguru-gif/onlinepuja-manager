@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../services/manager_api_service.dart';
-import '../../../theme/manager_theme.dart';
+import 'package:flutter/services.dart';
+import 'package:onlinepuja_manager/services/manager_api_service.dart';
+import 'package:onlinepuja_manager/theme/manager_theme.dart';
 
 class AiAgentsHubScreen extends StatefulWidget {
   const AiAgentsHubScreen({super.key});
@@ -439,6 +440,74 @@ class _AiAgentsHubScreenState extends State<AiAgentsHubScreen> with SingleTicker
     }
   }
 
+  void _showMediaPreview(String mediaUrl, String title) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: ManagerTheme.surfaceDark,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15), overflow: TextOverflow.ellipsis),
+                ),
+                IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.pop(ctx)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                mediaUrl,
+                height: 200,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  height: 120,
+                  color: Colors.black26,
+                  child: const Center(
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.video_collection_rounded, color: ManagerTheme.brandGold),
+                        SizedBox(width: 8),
+                        Text('Reel / Video Asset Link', style: TextStyle(color: Colors.white70)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(mediaUrl, style: const TextStyle(fontSize: 11, color: Colors.blueAccent)),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: ManagerTheme.brandGold, foregroundColor: Colors.black),
+                icon: const Icon(Icons.copy_rounded, size: 16),
+                label: const Text('Copy Asset URL'),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: mediaUrl));
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('✓ Media URL copied to clipboard!')),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pendingCount = _outputs.where((o) => o['status'] == 'pending_review').length;
@@ -686,7 +755,7 @@ class _AiAgentsHubScreenState extends State<AiAgentsHubScreen> with SingleTicker
                   if (out['media_url'] != null)
                     TextButton.icon(
                       style: TextButton.styleFrom(foregroundColor: Colors.blueAccent),
-                      onPressed: () {},
+                      onPressed: () => _showMediaPreview(out['media_url'].toString(), out['title']?.toString() ?? 'Media Asset'),
                       icon: const Icon(Icons.open_in_new_rounded, size: 14),
                       label: const Text('View 9:16 Reel / Image', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                     )

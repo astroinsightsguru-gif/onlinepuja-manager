@@ -5,6 +5,7 @@ import '../blogs/blogs_management_screen.dart';
 import '../social/social_management_screen.dart';
 import '../bookings/master_bookings_screen.dart';
 import '../b2b/b2b_partner_hub_screen.dart';
+import '../campaigns/campaign_automation_screen.dart';
 
 class LiveRadarScreen extends StatefulWidget {
   const LiveRadarScreen({super.key});
@@ -394,6 +395,14 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 10),
+        _buildControlCard(
+          title: 'Marketing & Campaign Automation',
+          subtitle: 'Automated WhatsApp, Brevo Email & Push Drops',
+          icon: Icons.cell_tower_rounded,
+          color: const Color(0xFF38BDF8),
+          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CampaignAutomationScreen())),
         ),
       ],
     );
