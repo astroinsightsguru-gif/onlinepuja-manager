@@ -58,23 +58,42 @@ class ManagerAuthSession extends ChangeNotifier {
     String? setPin,
   }) async {
     try {
-      final res = await http.post(
-        Uri.parse(loginEndpoint),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'email': email.trim(),
-          'password': password,
-        }),
-      ).timeout(const Duration(seconds: 12));
+      final client = http.Client();
+      http.Response res;
+      try {
+        res = await client.post(
+          Uri.parse(loginEndpoint),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: jsonEncode({
+            'email': email.trim(),
+            'password': password,
+          }),
+        ).timeout(const Duration(seconds: 25));
+      } finally {
+        client.close();
+      }
 
-      final data = jsonDecode(res.body);
+      dynamic decoded;
+      try {
+        decoded = jsonDecode(res.body);
+      } catch (e) {
+        return (
+          success: false,
+          message: 'Server returned non-JSON response (HTTP ${res.statusCode}).',
+        );
+      }
+
+      final Map<dynamic, dynamic> data = (decoded is Map) ? decoded : {};
 
       if (res.statusCode == 200 && data['success'] == true) {
         _token = data['token']?.toString() ?? 'session_ok';
-        final user = data['user'] as Map<String, dynamic>?;
-        if (user != null) {
-          _email = user['email']?.toString() ?? email;
-          _name = user['name']?.toString() ?? 'Online Puja Admin';
+        final userRaw = data['user'];
+        if (userRaw is Map) {
+          _email = userRaw['email']?.toString() ?? email;
+          _name = userRaw['name']?.toString() ?? 'Online Puja Admin';
         }
 
         if (setPin != null && setPin.length == 4) {
@@ -84,23 +103,36 @@ class ManagerAuthSession extends ChangeNotifier {
         _isAuthenticated = true;
         _isLocked = false;
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_prefToken, _token!);
-        await prefs.setString(_prefEmail, _email);
-        await prefs.setString(_prefName, _name);
-        await prefs.setBool(_prefIsLocked, false);
-        if (_masterPin != null) {
-          await prefs.setString(_prefPin, _masterPin!);
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString(_prefToken, _token!);
+          await prefs.setString(_prefEmail, _email);
+          await prefs.setString(_prefName, _name);
+          await prefs.setBool(_prefIsLocked, false);
+          if (_masterPin != null) {
+            await prefs.setString(_prefPin, _masterPin!);
+          }
+        } catch (storageErr) {
+          debugPrint('SharedPreferences save warning: $storageErr');
         }
 
         notifyListeners();
-        return (success: true, message: data['message']?.toString() ?? 'Authenticated');
+        return (
+          success: true,
+          message: data['message']?.toString() ?? 'Authenticated 🙏',
+        );
       } else {
-        final msg = data['message']?.toString() ?? data['error']?.toString() ?? 'Authentication failed';
+        final msg = data['message']?.toString() ??
+            data['error']?.toString() ??
+            'Authentication failed (HTTP ${res.statusCode})';
         return (success: false, message: msg);
       }
     } catch (e) {
-      return (success: false, message: 'Connection error: Unable to reach OnlinePuja server.');
+      debugPrint('Manager login exception: $e');
+      return (
+        success: false,
+        message: 'Connection error ($e). Please check your internet connection.',
+      );
     }
   }
 
