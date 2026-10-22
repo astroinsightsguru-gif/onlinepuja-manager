@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:op_shared/op_shared.dart';
 import 'package:provider/provider.dart';
 
@@ -990,39 +991,45 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 3.5,
-                      height: 15,
-                      decoration: BoxDecoration(
-                        color: CustomerTheme.brandGold,
-                        borderRadius: BorderRadius.circular(2),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 3.5,
+                        height: 15,
+                        decoration: BoxDecoration(
+                          color: CustomerTheme.brandGold,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      isHi ? '🎬 वैदिक रील्स व शॉट्स' : '🎬 Daily Spiritual Shorts',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: Text(
+                          isHi ? '🎬 वैदिक रील्स व शॉट्स' : '🎬 Daily Spiritual Shorts',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : const Color(0xFF1E293B),
+                          ),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                        ),
+                        child: const Text(
+                          'AI REELS',
+                          style: TextStyle(color: Colors.redAccent, fontSize: 9, fontWeight: FontWeight.w900),
+                        ),
                       ),
-                      child: const Text(
-                        'AI REELS',
-                        style: TextStyle(color: Colors.redAccent, fontSize: 9, fontWeight: FontWeight.w900),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
                 TextButton(
                   onPressed: () {
@@ -1061,20 +1068,28 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(14),
                       color: const Color(0xFF0F172A),
-                      image: DecorationImage(
-                        image: NetworkImage(s['image'] as String),
-                        fit: BoxFit.cover,
-                      ),
                       border: Border.all(
                         color: i == 0 ? CustomerTheme.brandGold : Colors.white24,
                         width: i == 0 ? 1.5 : 0.8,
                       ),
                     ),
+                    clipBehavior: Clip.antiAlias,
                     child: Stack(
+                      fit: StackFit.expand,
                       children: [
+                        CachedNetworkImage(
+                          imageUrl: s['image'] as String,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(color: const Color(0xFF1E293B)),
+                          errorWidget: (context, url, error) => Container(
+                            color: const Color(0xFF1E293B),
+                            child: Center(
+                              child: Text(s['icon'] as String, style: const TextStyle(fontSize: 24)),
+                            ),
+                          ),
+                        ),
                         Container(
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14),
                             gradient: LinearGradient(
                               colors: [
                                 Colors.transparent,
@@ -1416,7 +1431,7 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
                             children: [
                               CircleAvatar(
                                 radius: 26,
-                                backgroundImage: a.imageUrl.isNotEmpty ? NetworkImage(a.imageUrl) : null,
+                                backgroundImage: a.imageUrl.isNotEmpty ? CachedNetworkImageProvider(a.imageUrl) : null,
                                 child: a.imageUrl.isEmpty ? _avatarFallback(a.name) : null,
                               ),
                               Positioned(

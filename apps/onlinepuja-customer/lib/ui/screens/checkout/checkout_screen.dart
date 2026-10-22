@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../../state/app_session.dart';
 import '../profile/wallet_screen.dart';
 import '../profile/family_gotra_vault_screen.dart';
+import '../history/history_screen.dart';
 
 /// Unified checkout for AstroMall products and Puja packages
 /// (legacy `checkoutScreen.dart` + `deliveryAddressScreen.dart`).
@@ -189,12 +190,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (payOnline == true) {
             await launchUrl(Uri.parse(redirectUrl),
                 mode: LaunchMode.externalApplication);
+            if (!mounted) return;
+            session.refreshUser();
+            final viewHistory = await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                title: const Text('Payment Initiated 🙏'),
+                content: const Text(
+                    'Once your payment is completed on the secure gateway, your order is automatically confirmed and sanctified. You can view and track your order updates in My Bookings.'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx, false),
+                    child: const Text('Close'),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(ctx, true),
+                    child: const Text('View Bookings'),
+                  ),
+                ],
+              ),
+            );
+            if (!mounted) return;
+            if (viewHistory == true) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (_) => HistoryScreen(initialTabIndex: widget.product != null ? 2 : 1)),
+              );
+            } else {
+              Navigator.of(context).popUntil((r) => r.isFirst);
+            }
           }
           return;
         }
       }
+      session.refreshUser();
       if (!mounted) return;
-      await showDialog<void>(
+      final viewHistory = await showDialog<bool>(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
@@ -204,14 +234,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           content: Text(
               '$_title ordered successfully. We will notify you at every step.'),
           actions: [
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Done'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('View Bookings'),
             ),
           ],
         ),
       );
-      if (mounted) Navigator.of(context).popUntil((r) => r.isFirst);
+      if (!mounted) return;
+      if (viewHistory == true) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => HistoryScreen(initialTabIndex: widget.product != null ? 2 : 1)),
+        );
+      } else {
+        Navigator.of(context).popUntil((r) => r.isFirst);
+      }
     } on ApiException catch (e) {
       if (!mounted) return;
       final msg = e.message.toLowerCase();

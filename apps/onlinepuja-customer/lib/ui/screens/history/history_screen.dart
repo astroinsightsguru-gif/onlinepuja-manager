@@ -10,7 +10,9 @@ import '../../../app.dart';
 class HistoryScreen extends StatefulWidget {
   static const route = '/history';
 
-  const HistoryScreen({super.key});
+  final int initialTabIndex;
+
+  const HistoryScreen({super.key, this.initialTabIndex = 0});
 
   @override
   State<HistoryScreen> createState() => _HistoryScreenState();
@@ -25,7 +27,11 @@ class _HistoryScreenState extends State<HistoryScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: widget.initialTabIndex.clamp(0, 2),
+    );
     _reloadAll();
   }
 

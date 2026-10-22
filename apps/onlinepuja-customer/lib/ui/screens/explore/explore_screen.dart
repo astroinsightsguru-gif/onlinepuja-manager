@@ -521,14 +521,18 @@ class ExploreScreen extends StatelessWidget {
                     ),
                     child: Icon(f.icon, color: Colors.white, size: 18),
                   ),
-                  const Spacer(),
-                  if (f.badge != null)
-                    SacredBadge(
-                      label: f.badge!,
-                      fontSize: 8.5,
-                      color: CustomerTheme.brandGold.withValues(alpha: 0.2),
-                      textColor: CustomerTheme.brandDarkGold,
+                  const SizedBox(width: 4),
+                  if (f.badge != null) ...[
+                    const Spacer(),
+                    Flexible(
+                      child: SacredBadge(
+                        label: f.badge!,
+                        fontSize: 8.5,
+                        color: CustomerTheme.brandGold.withValues(alpha: 0.2),
+                        textColor: CustomerTheme.brandDarkGold,
+                      ),
                     ),
+                  ],
                 ],
               ),
               const SizedBox(height: 8),
