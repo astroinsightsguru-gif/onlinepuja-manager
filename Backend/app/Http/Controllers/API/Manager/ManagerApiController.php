@@ -994,4 +994,84 @@ class ManagerApiController extends Controller
             return response()->json(['status' => 500, 'error' => $e->getMessage()], 500);
         }
     }
+
+    /**
+     * 20. POST /api/manager/login
+     * Executive Superadmin Authentication Gate for OnlinePuja Manager
+     */
+    public function login(Request $request)
+    {
+        try {
+            $data = $request->json()->all() ?: $request->all();
+            if (empty($data)) {
+                $raw = json_decode($request->getContent(), true);
+                if (is_array($raw)) $data = $raw;
+            }
+            $email = trim((string)($data['email'] ?? $request->input('email', '')));
+            $password = (string)($data['password'] ?? $request->input('password', ''));
+            $pin = (string)($data['pin'] ?? $request->input('pin', ''));
+
+            if (empty($email)) {
+                return response()->json([
+                    'status' => 400,
+                    'success' => false,
+                    'message' => 'Superadmin email is required.',
+                ], 400);
+            }
+
+            // Find Superadmin user
+            $user = DB::table('users')->where('email', $email)->first();
+            if (!$user) {
+                return response()->json([
+                    'status' => 404,
+                    'success' => false,
+                    'message' => 'Superadmin user account not found.',
+                ], 404);
+            }
+
+            // Verify role
+            if (!in_array($user->userRoleName, ['SUPERADMIN', 'ADMIN'])) {
+                return response()->json([
+                    'status' => 403,
+                    'success' => false,
+                    'message' => 'Access denied: Superadmin privileges required.',
+                ], 403);
+            }
+
+            // Verify password using Hash::check
+            if (!\Illuminate\Support\Facades\Hash::check($password, $user->password)) {
+                return response()->json([
+                    'status' => 401,
+                    'success' => false,
+                    'message' => 'Invalid Superadmin password. Please check your credentials.',
+                ], 401);
+            }
+
+            // Generate an executive session token
+            $sessionToken = bin2hex(random_bytes(32));
+            DB::table('users')->where('id', $user->id)->update([
+                'token' => $sessionToken,
+                'updated_at' => Carbon::now(),
+            ]);
+
+            return response()->json([
+                'status' => 200,
+                'success' => true,
+                'token' => $sessionToken,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name ?? 'Online Puja Admin',
+                    'email' => $user->email,
+                    'role' => $user->userRoleName,
+                ],
+                'message' => 'Superadmin authentication successful.',
+            ], 200);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 500,
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

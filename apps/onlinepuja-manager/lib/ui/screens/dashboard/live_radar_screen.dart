@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:onlinepuja_manager/services/manager_api_service.dart';
+import 'package:onlinepuja_manager/services/manager_auth_session.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
 import '../blogs/blogs_management_screen.dart';
 import '../social/social_management_screen.dart';
@@ -118,7 +120,44 @@ class _LiveRadarScreenState extends State<LiveRadarScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: ManagerTheme.brandGold),
+            tooltip: 'Refresh Radar',
             onPressed: _refresh,
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.shield_rounded, color: Colors.white70),
+            tooltip: 'Executive Security',
+            color: const Color(0xFF1E293B),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            onSelected: (val) {
+              final session = context.read<ManagerAuthSession>();
+              if (val == 'lock') {
+                session.lockApp();
+              } else if (val == 'logout') {
+                session.logout();
+              }
+            },
+            itemBuilder: (ctx) => [
+              const PopupMenuItem(
+                value: 'lock',
+                child: Row(
+                  children: [
+                    Icon(Icons.lock_outline_rounded, color: ManagerTheme.brandGold, size: 18),
+                    SizedBox(width: 10),
+                    Text('Lock Command Center', style: TextStyle(color: Colors.white, fontSize: 13)),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+                    SizedBox(width: 10),
+                    Text('Superadmin Logout', style: TextStyle(color: Colors.redAccent, fontSize: 13)),
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
         bottom: _isLoading

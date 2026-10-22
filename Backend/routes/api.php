@@ -589,6 +589,9 @@ Route::get('feed/shorts', [\App\Http\Controllers\API\User\GrowthEngineController
 Route::post('feed/shorts/like', [\App\Http\Controllers\API\User\GrowthEngineController::class, 'likeShort'])->name('api.feed.shorts.like');
 
 Route::prefix('manager')->group(function () {
+    // 🔐 Executive Superadmin Authentication Gate
+    Route::post('login', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'login']);
+
     Route::get('radar', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getLiveRadar']);
     Route::post('radar', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getLiveRadar']);
     Route::get('banners', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getBanners']);
