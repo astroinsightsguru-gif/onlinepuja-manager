@@ -25,6 +25,7 @@ import '../blog/blog_screen.dart';
 import '../explore/prashna_oracle_screen.dart';
 import '../explore/swapna_shastra_screen.dart';
 import '../profile/family_gotra_vault_screen.dart';
+import '../shorts/spiritual_shorts_screen.dart';
 
 /// Clean, Human-Centered Vedic Home Portal (Consult Tab):
 /// - Clean header with OnlinePuja.live branding, drawer, smart AI button, wallet & language toggle
@@ -280,6 +281,7 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
                   _searchBar(context, scheme, isDark),
                   _heroBannerCarousel(context, scheme, isHi),
                   _varanasiFestiveMahotsavBar(context, isDark, isHi),
+                  _spiritualShortsStrip(context, isDark, isHi),
                   _curatedVedicGrid(context, scheme, isDark),
                   if (_prescriptions.isNotEmpty)
                     _acharyaPrescribedRemediesSection(context, currency, isDark, isHi),
@@ -938,6 +940,203 @@ class _ConsultHomeScreenState extends State<ConsultHomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _spiritualShortsStrip(BuildContext context, bool isDark, bool isHi) {
+    final shortsList = [
+      {
+        'title': isHi ? 'देव दीपावली दीपदान' : 'Dev Deepawali 108 Deepdaan',
+        'subtitle': isHi ? 'दशाश्वमेध घाट, काशी' : 'Dashashwamedh Ghat',
+        'icon': '🪔',
+        'badge': '10 Lakh Diya',
+        'image': 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&w=400&q=80',
+        'index': 0,
+      },
+      {
+        'title': isHi ? 'दैनिक पंचांग व मुहूर्त' : 'Dainik Panchang & Muhurat',
+        'subtitle': isHi ? 'शुभ अभिजित मुहूर्त' : 'Shubh Muhurat',
+        'icon': '☀️',
+        'badge': 'Daily Reel',
+        'image': 'https://images.unsplash.com/photo-1596402184320-417e7178b2cd?auto=format&fit=crop&w=400&q=80',
+        'index': 1,
+      },
+      {
+        'title': isHi ? 'काशी रुद्राभिषेक' : 'Kashi Rudrabhishek',
+        'subtitle': isHi ? 'विश्वनाथ ज्योतिर्लिंग' : 'Vishwanath Dham',
+        'icon': '🔱',
+        'badge': 'Live Seva',
+        'image': 'https://images.unsplash.com/photo-1561361513-2d000a50f0dc?auto=format&fit=crop&w=400&q=80',
+        'index': 2,
+      },
+      {
+        'title': isHi ? 'महालक्ष्मी हवन' : 'Maha Lakshmi Havan',
+        'subtitle': isHi ? 'धन व ऐश्वर्य प्राप्ति' : 'Wealth & Prosperity',
+        'icon': '🪷',
+        'badge': 'Diwali Seva',
+        'image': 'https://images.unsplash.com/photo-1512418490979-92798cec1380?auto=format&fit=crop&w=400&q=80',
+        'index': 3,
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 3.5,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: CustomerTheme.brandGold,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      isHi ? '🎬 वैदिक रील्स व शॉट्स' : '🎬 Daily Spiritual Shorts',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                      ),
+                      child: const Text(
+                        'AI REELS',
+                        style: TextStyle(color: Colors.redAccent, fontSize: 9, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SpiritualShortsScreen()),
+                    );
+                  },
+                  child: Text(
+                    isHi ? 'सभी देखें →' : 'Watch All →',
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: CustomerTheme.brandGold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          SizedBox(
+            height: 135,
+            child: ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              scrollDirection: Axis.horizontal,
+              itemCount: shortsList.length,
+              separatorBuilder: (context, index) => const SizedBox(width: 10),
+              itemBuilder: (context, i) {
+                final s = shortsList[i];
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => SpiritualShortsScreen(initialIndex: s['index'] as int)),
+                    );
+                  },
+                  child: Container(
+                    width: 105,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: const Color(0xFF0F172A),
+                      image: DecorationImage(
+                        image: NetworkImage(s['image'] as String),
+                        fit: BoxFit.cover,
+                      ),
+                      border: Border.all(
+                        color: i == 0 ? CustomerTheme.brandGold : Colors.white24,
+                        width: i == 0 ? 1.5 : 0.8,
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.transparent,
+                                Colors.black.withValues(alpha: 0.85),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          left: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              s['badge'] as String,
+                              style: const TextStyle(color: CustomerTheme.brandGold, fontSize: 8.5, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: const Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 20),
+                        ),
+                        Positioned(
+                          left: 8,
+                          right: 8,
+                          bottom: 8,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                s['title'] as String,
+                                style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.w800),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 1),
+                              Text(
+                                s['subtitle'] as String,
+                                style: const TextStyle(color: Colors.white70, fontSize: 9),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

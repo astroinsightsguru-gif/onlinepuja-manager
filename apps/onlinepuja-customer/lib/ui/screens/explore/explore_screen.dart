@@ -22,6 +22,7 @@ import 'swapna_shastra_screen.dart';
 import 'vedic_audio_screen.dart';
 import 'sankalp_blessing_card_dialog.dart';
 import '../kundli/dosha_remedy_bridge.dart';
+import '../shorts/spiritual_shorts_screen.dart';
 
 /// Explore sanctum: Sacred spiritual tools, Vedic rituals & AstroMall
 class ExploreScreen extends StatelessWidget {
@@ -243,6 +244,14 @@ class ExploreScreen extends StatelessWidget {
                     badge: 'LIVE 24/7',
                     gradient: const [Color(0xFFF59E0B), Color(0xFFB45309)],
                     screen: const LiveDarshanScreen(),
+                  ),
+                  _FeatureItem(
+                    title: 'Spiritual Shorts',
+                    subtitle: 'Daily AI Reels & Shubh Muhurat',
+                    icon: Icons.play_circle_fill_rounded,
+                    badge: 'REELS',
+                    gradient: const [Color(0xFFE11D48), Color(0xFF9F1239)],
+                    screen: const SpiritualShortsScreen(),
                   ),
                   _FeatureItem(
                     title: '108 Japa Mala',
