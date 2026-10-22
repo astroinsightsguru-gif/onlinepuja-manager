@@ -597,4 +597,16 @@ Route::prefix('manager')->group(function () {
     Route::post('agents/{id}/run-now', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'runAgentNow']);
     Route::get('agents/outputs', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getAgentOutputs']);
     Route::post('agents/outputs/{id}/approve', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'approveAgentOutput']);
+
+    // 🪔 Festivals & Multi-Campaign Parallel Radar
+    Route::get('festivals', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getFestivals']);
+    Route::post('festivals/schedule', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'scheduleFestival']);
+
+    // 💼 B2B Partner Network & Google Maps Leads
+    Route::get('b2b/leads', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getB2bLeads']);
+    Route::get('b2b/pitch/{id?}', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'getB2bPitch']);
+    Route::post('b2b/dispatch', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'dispatchB2bCampaign']);
+
+    // 🚀 Omnichannel Broadcast (WhatsApp + Brevo + Push)
+    Route::post('growth/omnichannel-broadcast', [\App\Http\Controllers\API\Manager\ManagerApiController::class, 'omnichannelBroadcast']);
 });

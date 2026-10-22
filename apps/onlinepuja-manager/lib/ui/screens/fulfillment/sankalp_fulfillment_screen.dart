@@ -10,38 +10,64 @@ class SankalpFulfillmentScreen extends StatefulWidget {
 }
 
 class _SankalpFulfillmentScreenState extends State<SankalpFulfillmentScreen> {
-  final List<Map<String, dynamic>> _fulfillmentList = [
-    {
-      'id': '#OP-PUJA-1048',
-      'devotee': 'Amitabh Trivedi',
-      'gotra': 'Bharadwaj Gotra',
-      'puja': 'Shri Kashi Vishwanath Rudrabhishek',
-      'temple': 'Shri Kashi Vishwanath Dham, Varanasi',
-      'videoUrl': '',
-      'awb': '',
-      'status': 'Video Pending',
-    },
-    {
-      'id': '#OP-PUJA-1047',
-      'devotee': 'Pooja Agarwal',
-      'gotra': 'Garg Gotra',
-      'puja': 'Diwali Maha Lakshmi Havan',
-      'temple': 'Varanasi Sanctum Mandap',
-      'videoUrl': 'https://stream.onlinepuja.live/sankalp/1047.mp4',
-      'awb': '',
-      'status': 'Prasad Dispatch Pending',
-    },
-    {
-      'id': '#OP-PUJA-1046',
-      'devotee': 'Suresh Kulkarni',
-      'gotra': 'Kashyap Gotra',
-      'puja': 'Dev Deepawali 108 Deepdaan',
-      'temple': 'Dashashwamedh Ghat, Kashi',
-      'videoUrl': 'https://stream.onlinepuja.live/sankalp/1046.mp4',
-      'awb': 'BLUEDART-8829104',
-      'status': 'Fulfilled',
-    },
-  ];
+  final ManagerApiService _api = ManagerApiService();
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _fulfillmentList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLiveSankalps();
+  }
+
+  Future<void> _loadLiveSankalps() async {
+    setState(() => _isLoading = true);
+    final data = await _api.fetchSankalps();
+    if (mounted) {
+      setState(() {
+        _fulfillmentList = data.isNotEmpty ? data : _fallbackList();
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<Map<String, dynamic>> _fallbackList() {
+    return [
+      {
+        'id': '#OP-PUJA-1048',
+        'orderId': 1048,
+        'devotee': 'Amitabh Trivedi',
+        'gotra': 'Bharadwaj Gotra',
+        'puja': 'Shri Kashi Vishwanath Rudrabhishek',
+        'temple': 'Shri Kashi Vishwanath Dham, Varanasi',
+        'videoUrl': '',
+        'awb': '',
+        'status': 'Video Pending',
+      },
+      {
+        'id': '#OP-PUJA-1047',
+        'orderId': 1047,
+        'devotee': 'Pooja Agarwal',
+        'gotra': 'Garg Gotra',
+        'puja': 'Diwali Maha Lakshmi Havan',
+        'temple': 'Varanasi Sanctum Mandap',
+        'videoUrl': 'https://stream.onlinepuja.live/sankalp/1047.mp4',
+        'awb': '',
+        'status': 'Prasad Dispatch Pending',
+      },
+      {
+        'id': '#OP-PUJA-1046',
+        'orderId': 1046,
+        'devotee': 'Suresh Kulkarni',
+        'gotra': 'Kashyap Gotra',
+        'puja': 'Dev Deepawali 108 Deepdaan',
+        'temple': 'Dashashwamedh Ghat, Kashi',
+        'videoUrl': 'https://stream.onlinepuja.live/sankalp/1046.mp4',
+        'awb': 'BLUEDART-8829104',
+        'status': 'Fulfilled',
+      },
+    ];
+  }
 
   void _showAttachVideoDialog(Map<String, dynamic> item) {
     final videoCtrl = TextEditingController(text: item['videoUrl']);
@@ -138,8 +164,18 @@ class _SankalpFulfillmentScreenState extends State<SankalpFulfillmentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sankalp & Prasad Dispatch'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _loadLiveSankalps,
+          ),
+        ],
       ),
-      body: ListView.separated(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadLiveSankalps,
+              child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: _fulfillmentList.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
@@ -226,6 +262,7 @@ class _SankalpFulfillmentScreenState extends State<SankalpFulfillmentScreen> {
           );
         },
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:onlinepuja_manager/services/manager_api_service.dart';
 import 'package:onlinepuja_manager/theme/manager_theme.dart';
+import '../b2b/b2b_partner_hub_screen.dart';
 
 class GrowthBroadcastScreen extends StatefulWidget {
   const GrowthBroadcastScreen({super.key});
@@ -146,9 +147,71 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
                 ],
               ),
             ),
+            // 2. B2B Partner Distribution Banner Card
+            Container(
+              margin: const EdgeInsets.only(top: 16),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF1E1B4B),
+                    ManagerTheme.surfaceDark,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.indigoAccent.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.indigoAccent.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.handshake_rounded, color: Colors.indigoAccent, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'B2B Distribution Hub',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: Colors.white),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          'Engage 100+ Hotels & Tour Operators with 25% revenue-share puja packages.',
+                          style: TextStyle(fontSize: 11, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigoAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const B2bPartnerHubScreen()),
+                      );
+                    },
+                    child: const Text('Open Hub', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 24),
 
-            // 2. Autonomous Master Brain Commands
+            // 3. Autonomous Master Brain Commands
             const Text('Autonomous Master Brain Triggers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Colors.white)),
             const SizedBox(height: 12),
 
@@ -160,6 +223,7 @@ class _GrowthBroadcastScreenState extends State<GrowthBroadcastScreen> {
                 _buildActionChip('Dispatch Festival Social Posts', 'publish_social', Icons.share_rounded),
                 _buildActionChip('Refresh 60-Day Festivals', 'seed_festivals', Icons.event_available_rounded),
                 _buildActionChip('Rebuild Live Sitemap.xml', 'rebuild_sitemap', Icons.map_rounded),
+                _buildActionChip('Omnichannel Broadcast', 'omnichannel_blast', Icons.cell_tower_rounded),
               ],
             ),
             const SizedBox(height: 16),

@@ -215,4 +215,153 @@ class ManagerApiService {
       return false;
     }
   }
+
+  // 13. Fetch Live Pending Sankalps
+  Future<List<Map<String, dynamic>>> fetchSankalps() async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/sankalps')).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded['sankalps'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['sankalps']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // 14. Fetch Live Banners & Bookable Pujas
+  Future<Map<String, dynamic>> fetchBannersAndPujas() async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/banners')).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        return {
+          'banners': decoded['banners'] is List ? List<Map<String, dynamic>>.from(decoded['banners']) : <Map<String, dynamic>>[],
+          'pujas': decoded['pujas'] is List ? List<Map<String, dynamic>>.from(decoded['pujas']) : <Map<String, dynamic>>[],
+        };
+      }
+    } catch (_) {}
+    return {'banners': <Map<String, dynamic>>[], 'pujas': <Map<String, dynamic>>[]};
+  }
+
+  // 15. Fetch Upcoming Festivals & Milestone Countdown
+  Future<List<Map<String, dynamic>>> fetchFestivals() async {
+    try {
+      final res = await http.get(Uri.parse('$baseUrl/festivals')).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        if (decoded['festivals'] is List) {
+          return List<Map<String, dynamic>>.from(decoded['festivals']);
+        }
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  // 16. Schedule New Sacred Festival
+  Future<bool> scheduleFestival({
+    required String name,
+    required String date,
+    String deity = 'Vedic Devata',
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/festivals/schedule'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'name': name,
+          'date': date,
+          'deity': deity,
+        }),
+      ).timeout(const Duration(seconds: 10));
+      return res.statusCode == 200;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 17. Fetch B2B Leads Directory
+  Future<Map<String, dynamic>> fetchB2bLeads({String? city}) async {
+    try {
+      String url = '$baseUrl/b2b/leads';
+      if (city != null && city != 'all') url += '?city=$city';
+
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        return {
+          'total': decoded['total_leads'] ?? 0,
+          'cities': decoded['cities'] is List ? List<Map<String, dynamic>>.from(decoded['cities']) : <Map<String, dynamic>>[],
+          'leads': decoded['leads'] is List ? List<Map<String, dynamic>>.from(decoded['leads']) : <Map<String, dynamic>>[],
+        };
+      }
+    } catch (_) {}
+    return {'total': 0, 'cities': <Map<String, dynamic>>[], 'leads': <Map<String, dynamic>>[]};
+  }
+
+  // 18. Fetch B2B Proposal Pitch
+  Future<Map<String, dynamic>?> fetchB2bPitch({int? leadId}) async {
+    try {
+      String url = '$baseUrl/b2b/pitch';
+      if (leadId != null) url += '/$leadId';
+
+      final res = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 8));
+      if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+        return decoded['pitch'] as Map<String, dynamic>?;
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  // 19. Dispatch B2B Campaign
+  Future<Map<String, dynamic>> dispatchB2bCampaign({String city = 'all'}) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/b2b/dispatch'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'city': city}),
+      ).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+    return {'success': false, 'message': 'Failed to dispatch B2B campaign.'};
+  }
+
+  // 20. Send Omnichannel Broadcast (WhatsApp + Brevo + Push)
+  Future<Map<String, dynamic>> sendOmnichannelBroadcast({
+    required String headline,
+    required String body,
+    String channel = 'both',
+    String segment = 'all',
+    String? mediaUrl,
+    String ctaText = 'Book Sacred Puja 🙏',
+    String ctaUrl = 'https://onlinepuja.live',
+  }) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$baseUrl/growth/omnichannel-broadcast'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'headline': headline,
+          'body': body,
+          'channel': channel,
+          'segment': segment,
+          'media_url': mediaUrl,
+          'cta_text': ctaText,
+          'cta_url': ctaUrl,
+        }),
+      ).timeout(const Duration(seconds: 15));
+      if (res.statusCode == 200) {
+        return jsonDecode(res.body) as Map<String, dynamic>;
+      }
+    } catch (e) {
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+    return {'success': false, 'message': 'Failed to send broadcast.'};
+  }
 }
